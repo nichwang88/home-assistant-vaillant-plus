@@ -215,7 +215,11 @@ class VaillantWaterHeater(VaillantEntity, WaterHeaterEntity):
         """
         try:
             await self.send_command(attr_name, value)
-            self._cache[attr_name] = value  # 更新缓存
-            self.set_device_attr(attr_name, value)
+            # Update device_attrs for state persistence
+            self._client.device_attrs[attr_name] = value
+            # Update cache
+            self._cache[attr_name] = value
+            # Update HA state
+            self.async_write_ha_state()
         except Exception as e:
             _LOGGER.error("Failed to update device attribute %s: %s", attr_name, e)

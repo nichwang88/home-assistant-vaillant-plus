@@ -178,14 +178,24 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         try:
             if hvac_mode == HVACMode.OFF:
                 await self._client.control_device({"Heating_Enable": False})
-                self.set_device_attr("Heating_Enable", False)
+                # Update device_attrs for state persistence
+                self._client.device_attrs["Heating_Enable"] = False
+                # Update cache
+                self._cache["Heating_Enable"] = False
                 self._cache["hvac_mode"] = HVACMode.OFF
                 self._cache["hvac_action"] = HVACAction.OFF
+                # Update HA state
+                self.async_write_ha_state()
             elif hvac_mode == HVACMode.HEAT:
                 await self._client.control_device({"Heating_Enable": True})
-                self.set_device_attr("Heating_Enable", True)
+                # Update device_attrs for state persistence
+                self._client.device_attrs["Heating_Enable"] = True
+                # Update cache
+                self._cache["Heating_Enable"] = True
                 self._cache["hvac_mode"] = HVACMode.HEAT
                 self._cache["hvac_action"] = HVACAction.HEATING
+                # Update HA state
+                self.async_write_ha_state()
         except Exception as e:
             _LOGGER.error("Failed to set HVAC mode: %s", e)
 
@@ -208,9 +218,13 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         await self._client.control_device({
             "Flow_Temperature_Setpoint": new_temperature,
         })
-       
+
+        # Update device_attrs for state persistence
+        self._client.device_attrs["Flow_Temperature_Setpoint"] = new_temperature
+        # Update cache
         self._cache["Flow_Temperature_Setpoint"] = new_temperature
-        self.set_device_attr("Flow_Temperature_Setpoint", new_temperature)
+        # Update HA state
+        self.async_write_ha_state()
 
     async def async_turn_off(self):
         """
@@ -218,13 +232,15 @@ class VaillantClimate(VaillantEntity, ClimateEntity):
         This method sets `Heating_Enable` to False and updates the cached values.
         """
         try:
-            # 关闭设备
             await self._client.control_device({"Heating_Enable": False})
-            self.set_device_attr("Heating_Enable", False)
-
-            # 更新缓存
+            # Update device_attrs for state persistence
+            self._client.device_attrs["Heating_Enable"] = False
+            # Update cache
+            self._cache["Heating_Enable"] = False
             self._cache["hvac_mode"] = HVACMode.OFF
             self._cache["hvac_action"] = HVACAction.OFF
+            # Update HA state
+            self.async_write_ha_state()
         except Exception as e:
             _LOGGER.error("Failed to turn off the device: %s", e)
  
